@@ -582,8 +582,6 @@ async function closeTicket(interaction, reason) {
     });
   }
 
-  await interaction.deferReply();
-
   const type = getType(data.type);
   const priority = getPriority(data.priority);
   const unix = Math.floor(Date.now() / 1000);
@@ -613,109 +611,130 @@ async function closeTicket(interaction, reason) {
       { name: "وقت الإغلاق", value: `<t:${unix}:F>`, inline: false },
       { name: "سبب الإغلاق", value: reason.slice(0, 1024), inline: false }
     )
+    .setFooter({ text: "التذكرة مغلقة - الإدارة فقط" })
     .setTimestamp();
 
-  // DM لصاحب التذكرة
-  const owner = await client.users.fetch(data.owner).catch(() => null);
-  if (owner) {
-    await owner.send({ embeds: [closeEmbed] }).catch(() => {});
-  }
-
-  // DM للشخص المستلم
-  if (data.claimed && data.claimed !== "0" && data.claimed !== data.owner) {
-    const claimer = await client.users.fetch(data.claimed).catch(() => null);
-    if (claimer) {
-      await claimer.send({ embeds: [closeEmbed] }).catch(() => {});
-    }
-  }
-
-  // لوج الإغلاق
-  if (isSnowflake(CONFIG.CLOSE_LOG_CHANNEL_ID)) {
-    const logChannel =
-      interaction.guild.channels.cache.get(CONFIG.CLOSE_LOG_CHANNEL_ID) ||
-      (await interaction.guild.channels
-        .fetch(CONFIG.CLOSE_LOG_CHANNEL_ID)
-        .catch(() => null));
-
-    if (logChannel?.isTextBased()) {
-      await logChannel.send({ embeds: [closeEmbed] }).catch(() => {});
-    }
-  }
-
-  // حفظ الحالة كمغلقة
-  const updated = { ...data, status: "closed" };
-
-  await channel.setTopic(buildTopic(updated)).catch(() => {});
-  await channel
-    .setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95))
-    .catch(() => {});
-
-  // نفس رد الإغلاق يتحول إلى بانل الإدارة؛ كده مفيش Loading يفضل معلق
-  await interaction.editReply({
-    embeds: [
-      EmbedBuilder.from(closeEmbed).setFooter({
-        text: "التذكرة مغلقة - الإدارة فقط",
-      }),
-    ],
+  // الرد فوراً على Discord حتى لا يظل البوت Thinking
+  await interaction.reply({
+    embeds: [closeEmbed],
     components: [closedButtons()],
   });
 
-  // تحديث البانل الرئيسية القديمة أيضاً
-  await refreshMainTicketMessage(channel);
+  // من هنا أي خطأ جانبي لا يمنع ظهور البانل
+  try {
+    const updated = { ...data, status: "closed" };
 
-  // صاحب التذكرة لا يرى التذكرة بعد الإغلاق
-  await channel.permissionOverwrites
-    .edit(data.owner, {
-      ViewChannel: false,
-      SendMessages: false,
-    })
-    .catch(() => {});
+    await channel.setTopic(buildTopic(updated)).catch((err) => {
+      console.error("SET TOPIC ERROR:", err);
+    });
 
-  // أي Member أُضيف للتذكرة يتم إخفاؤه بعد الإغلاق
-  for (const overwrite of channel.permissionOverwrites.cache.values()) {
-    if (
-      overwrite.type === OverwriteType.Member &&
-      overwrite.id !== client.user.id &&
-      overwrite.id !== data.owner
-    ) {
-      await channel.permissionOverwrites
-        .edit(overwrite.id, {
-          ViewChannel: false,
-          SendMessages: false,
-        })
-        .catch(() => {});
+    await channel
+      .setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95))
+      .catch((err) => {
+        console.error("SET NAME ERROR:", err);
+      });
+
+    // تحديث البانل الرئيسية القديمة
+    await refreshMainTicketMessage(channel).catch((err) => {
+      console.error("REFRESH MAIN PANEL ERROR:", err);
+    });
+
+    // DM لصاحب التذكرة
+    const owner = await client.users.fetch(data.owner).catch(() => null);
+    if (owner) {
+      owner.send({ embeds: [closeEmbed] }).catch((err) => {
+        console.error("OWNER DM ERROR:", err);
+      });
     }
-  }
 
-  const keepVisibleRoles = new Set([
-    ...validIds(CONFIG.CLOSED_VIEW_ROLE_IDS),
-    ...validIds(CONFIG.REOPEN_ROLE_IDS),
-    ...validIds(CONFIG.DELETE_ROLE_IDS),
-  ]);
+    // DM للشخص الذي استلم التذكرة
+    if (data.claimed && data.claimed !== "0" && data.claimed !== data.owner) {
+      const claimer = await client.users.fetch(data.claimed).catch(() => null);
+      if (claimer) {
+        claimer.send({ embeds: [closeEmbed] }).catch((err) => {
+          console.error("CLAIMER DM ERROR:", err);
+        });
+      }
+    }
 
-  // رول الستاف العادي يختفي إلا لو موجود ضمن رولات التذاكر المغلقة
-  for (const roleId of validIds(CONFIG.TICKET_STAFF_ROLE_IDS)) {
-    if (!keepVisibleRoles.has(roleId)) {
+    // لوج الإغلاق
+    if (isSnowflake(CONFIG.CLOSE_LOG_CHANNEL_ID)) {
+      const logChannel =
+        interaction.guild.channels.cache.get(CONFIG.CLOSE_LOG_CHANNEL_ID) ||
+        (await interaction.guild.channels
+          .fetch(CONFIG.CLOSE_LOG_CHANNEL_ID)
+          .catch(() => null));
+
+      if (logChannel?.isTextBased()) {
+        logChannel.send({ embeds: [closeEmbed] }).catch((err) => {
+          console.error("CLOSE LOG ERROR:", err);
+        });
+      }
+    }
+
+    // إخفاء التذكرة من صاحبها
+    await channel.permissionOverwrites
+      .edit(data.owner, {
+        ViewChannel: false,
+        SendMessages: false,
+      })
+      .catch((err) => {
+        console.error("OWNER PERMISSION ERROR:", err);
+      });
+
+    // إخفاء أي أعضاء تمت إضافتهم يدويًا
+    for (const overwrite of channel.permissionOverwrites.cache.values()) {
+      if (
+        overwrite.type === OverwriteType.Member &&
+        overwrite.id !== client.user.id &&
+        overwrite.id !== data.owner
+      ) {
+        await channel.permissionOverwrites
+          .edit(overwrite.id, {
+            ViewChannel: false,
+            SendMessages: false,
+          })
+          .catch((err) => {
+            console.error("MEMBER PERMISSION ERROR:", err);
+          });
+      }
+    }
+
+    const keepVisibleRoles = new Set([
+      ...validIds(CONFIG.CLOSED_VIEW_ROLE_IDS),
+      ...validIds(CONFIG.REOPEN_ROLE_IDS),
+      ...validIds(CONFIG.DELETE_ROLE_IDS),
+    ]);
+
+    // رول الستاف العادي يختفي لو مش ضمن رولات رؤية المغلق
+    for (const roleId of validIds(CONFIG.TICKET_STAFF_ROLE_IDS)) {
+      if (!keepVisibleRoles.has(roleId)) {
+        await channel.permissionOverwrites
+          .edit(roleId, {
+            ViewChannel: false,
+            SendMessages: false,
+          })
+          .catch((err) => {
+            console.error("STAFF PERMISSION ERROR:", err);
+          });
+      }
+    }
+
+    // رولات الإدارة التي ترى التذكرة بعد الإغلاق
+    for (const roleId of keepVisibleRoles) {
       await channel.permissionOverwrites
         .edit(roleId, {
-          ViewChannel: false,
-          SendMessages: false,
+          ViewChannel: true,
+          SendMessages: true,
+          ReadMessageHistory: true,
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("CLOSED VIEW ROLE ERROR:", err);
+        });
     }
+  } catch (error) {
+    console.error("POST-CLOSE ERROR:", error);
   }
-
-  // رولات الإدارة بعد الإغلاق
-  for (const roleId of keepVisibleRoles) {
-    await channel.permissionOverwrites
-      .edit(roleId, {
-        ViewChannel: true,
-        SendMessages: true,
-        ReadMessageHistory: true,
-      })
-      .catch(() => {});
-  }
-
 }
 
 // =====================================================
