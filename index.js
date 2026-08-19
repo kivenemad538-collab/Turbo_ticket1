@@ -582,7 +582,7 @@ async function closeTicket(interaction, reason) {
     });
   }
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply();
 
   const type = getType(data.type);
   const priority = getPriority(data.priority);
@@ -650,8 +650,8 @@ async function closeTicket(interaction, reason) {
     .setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95))
     .catch(() => {});
 
-  // بانل الإغلاق تُرسل قبل تغيير الصلاحيات
-  await channel.send({
+  // نفس رد الإغلاق يتحول إلى بانل الإدارة؛ كده مفيش Loading يفضل معلق
+  await interaction.editReply({
     embeds: [
       EmbedBuilder.from(closeEmbed).setFooter({
         text: "التذكرة مغلقة - الإدارة فقط",
@@ -660,7 +660,7 @@ async function closeTicket(interaction, reason) {
     components: [closedButtons()],
   });
 
-  // تحديث البانل الرئيسية
+  // تحديث البانل الرئيسية القديمة أيضاً
   await refreshMainTicketMessage(channel);
 
   // صاحب التذكرة لا يرى التذكرة بعد الإغلاق
@@ -716,9 +716,6 @@ async function closeTicket(interaction, reason) {
       .catch(() => {});
   }
 
-  await interaction.editReply(
-    "✅ تم إغلاق التذكرة، وتم إظهار بانل **إعادة فتح / حذف** للإدارة."
-  );
 }
 
 // =====================================================
@@ -1119,7 +1116,13 @@ client.on("interactionCreate", async (interaction) => {
       ephemeral: true,
     };
 
-    if (interaction.replied || interaction.deferred) {
+    if (interaction.deferred) {
+      await interaction.editReply({
+        content: payload.content,
+        embeds: [],
+        components: [],
+      }).catch(() => {});
+    } else if (interaction.replied) {
       await interaction.followUp(payload).catch(() => {});
     } else {
       await interaction.reply(payload).catch(() => {});
