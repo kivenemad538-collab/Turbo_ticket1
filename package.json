@@ -1,13 +1,13 @@
 {
-  "name": "blue-discord-ticket-bot",
-  "version": "1.0.0",
-  "description": "Arabic blue-themed Discord ticket system for Railway",
+  "name": "blue-ticket-bot-clean-v3",
+  "version": "3.0.0",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20"
   },
   "dependencies": {
     "discord.js": "^14.16.3"

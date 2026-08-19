@@ -12,49 +12,48 @@ const {
   TextInputStyle,
   PermissionFlagsBits,
   ChannelType,
+  OverwriteType,
 } = require("discord.js");
 
 // =====================================================
-//                 إعدادات البوت - عدّل هنا فقط
+//                    CONFIG - عدّل هنا فقط
 // =====================================================
 
 const CONFIG = {
-  // التوكن لا تضعه هنا. ضعه في Railway Variables باسم DISCORD_TOKEN
-
+  // التوكن يوضع في Railway Variables باسم DISCORD_TOKEN
   GUILD_ID: "1522093054365012078",
 
-  // الرولات المسموح لها بإرسال بانل التذاكر بواسطة الأمر !ticketpanel
+  // من يستطيع إرسال بانل التذاكر بأمر !ticketpanel
   PANEL_ROLE_IDS: [
     "1522093054507614300",
     "1532767584326385664",
   ],
 
-  // الرولات التي تستطيع استلام وإغلاق التذاكر
+  // من يستطيع استلام وإغلاق التذكرة
   TICKET_STAFF_ROLE_IDS: [
     "1522093054452957329",
     "1522093054452957328",
-    // يمكنك إضافة أي عدد من الرولات
   ],
 
-  // الرولات التي تستطيع إعادة فتح التذكرة بعد إغلاقها
+  // من يستطيع إعادة فتح التذكرة بعد الإغلاق
   REOPEN_ROLE_IDS: [
     "1522093054507614300",
     "1532767584326385664",
   ],
 
-  // الرولات التي تستطيع حذف التذكرة بعد إغلاقها
+  // من يستطيع حذف التذكرة بعد الإغلاق
   DELETE_ROLE_IDS: [
     "1522093054507614300",
     "1532767584326385664",
   ],
 
-  // الرولات الإدارية التي تظل ترى التذكرة بعد إغلاقها
+  // من يظل يرى التذكرة وهي مغلقة
   CLOSED_VIEW_ROLE_IDS: [
     "1522093054507614300",
-    "1532767584326385664",,
+    "1532767584326385664",
   ],
 
-  // كل نوع تذكرة له كاتجوري ثابت خاص به
+  // كل نوع تذكرة له Category مستقلة
   TICKET_CATEGORY_IDS: {
     support: "1522093063369920700",
     monitoring: "1522093063588020290",
@@ -63,8 +62,8 @@ const CONFIG = {
     bug_report: "1522093064942915656",
   },
 
-  // اتشانلات إشعارات الأولوية لكل نوع تذكرة
-  // التذكرة لا تنتقل من كاتجوري النوع عند تغيير الأولوية؛ يتم إرسال إشعار هنا فقط.
+  // اتشانل إشعار الأولوية لكل نوع تذكرة
+  // التذكرة نفسها لا تنتقل عند تغيير الأولوية.
   PRIORITY_NOTIFICATION_CHANNEL_IDS: {
     support: {
       normal: "SUPPORT_NORMAL_CHANNEL_ID",
@@ -93,28 +92,26 @@ const CONFIG = {
     },
   },
 
-  // اتشانل لوج الإغلاق
+  // اتشانل لوج الإغلاق - لو سبتها Placeholder مش هيبعت لوج
   CLOSE_LOG_CHANNEL_ID: "CLOSE_LOG_CHANNEL_ID",
 
   // صورة بانل التذاكر
-  PANEL_IMAGE_URL: "https://cdn.discordapp.com/attachments/1523767129629917315/1539717509199040523/IMG_0188.png?ex=6a87552c&is=6a8603ac&hm=01e6d5cdce37020fad09a0221ac9f8f8ba853da353b96277882b105b3b750e0e&",
+  PANEL_IMAGE_URL:
+    "https://cdn.discordapp.com/attachments/1523767129629917315/1539717509199040523/IMG_0188.png?ex=6a87552c&is=6a8603ac&hm=01e6d5cdce37020fad09a0221ac9f8f8ba853da353b96277882b105b3b750e0e&",
 
-  // اللون الأزرق
   BLUE_COLOR: 0x1e90ff,
-
-  // بادئة اسم التذكرة
   TICKET_PREFIX: "ticket",
 };
 
 // =====================================================
-//                  أنواع التذاكر
+//                       DATA
 // =====================================================
 
 const TICKET_TYPES = {
   support: {
     label: "الدعم الفني",
     emoji: "🛠️",
-    description: "للمشاكل الفنية، البوتات، الديسكورد أو مشاكل السيرفر.",
+    description: "للمشاكل الفنية والبوتات والديسكورد أو مشاكل السيرفر.",
   },
   monitoring: {
     label: "الرقابة",
@@ -129,7 +126,7 @@ const TICKET_TYPES = {
   staff_complaint: {
     label: "شكوى ضد إداري",
     emoji: "⚖️",
-    description: "لتقديم شكوى ضد إداري، ويتم التعامل معها بسرية قدر الإمكان.",
+    description: "لتقديم شكوى ضد إداري.",
   },
   bug_report: {
     label: "الإبلاغ عن الأخطاء",
@@ -142,22 +139,22 @@ const PRIORITIES = {
   normal: {
     label: "عادي",
     emoji: "🔵",
-    description: "تذكرة عادية ولا تحتاج تدخلاً عاجلاً.",
+    description: "حالة عادية.",
   },
   important: {
     label: "مهم",
     emoji: "🟠",
-    description: "مشكلة مهمة وتحتاج متابعة أسرع.",
+    description: "تحتاج متابعة أسرع.",
   },
   urgent: {
     label: "ضروري",
     emoji: "🔴",
-    description: "حالة ضرورية وتحتاج تدخل الإدارة بأسرع وقت.",
+    description: "تحتاج تدخل سريع.",
   },
 };
 
 // =====================================================
-//                     تشغيل البوت
+//                       CLIENT
 // =====================================================
 
 const client = new Client({
@@ -170,37 +167,50 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.User],
 });
 
+// =====================================================
+//                      HELPERS
+// =====================================================
 
-function memberHasAnyRole(member, roleIds = []) {
-  return roleIds.some((id) => id && member.roles.cache.has(id));
+function isSnowflake(value) {
+  return typeof value === "string" && /^\d{17,20}$/.test(value);
+}
+
+function validIds(ids = []) {
+  return ids.filter(isSnowflake);
+}
+
+function hasAnyRole(member, ids = []) {
+  const roles = validIds(ids);
+  return roles.some((id) => member.roles.cache.has(id));
+}
+
+function canAdmin(member) {
+  return member.permissions.has(PermissionFlagsBits.Administrator);
 }
 
 function safeName(name) {
   return (
-    name
+    String(name || "user")
       .toLowerCase()
       .replace(/[^a-z0-9\u0600-\u06ff-_]/gi, "-")
       .replace(/-+/g, "-")
-      .slice(0, 45) || "user"
+      .replace(/^-|-$/g, "")
+      .slice(0, 35) || "user"
   );
-}
-
-function priorityName(priority) {
-  return PRIORITIES[priority]?.label || priority;
 }
 
 function parseTopic(topic = "") {
   const data = {};
-  for (const part of topic.split("|")) {
-    const [k, ...rest] = part.split(":");
-    if (k && rest.length) data[k.trim()] = rest.join(":").trim();
+  for (const part of String(topic).split("|")) {
+    const [key, ...rest] = part.split(":");
+    if (key && rest.length) data[key] = rest.join(":");
   }
   return data;
 }
 
 function buildTopic(data) {
   return [
-    `ticket:true`,
+    "ticket:true",
     `owner:${data.owner || "0"}`,
     `type:${data.type || "support"}`,
     `priority:${data.priority || "normal"}`,
@@ -214,16 +224,64 @@ function getTicketData(channel) {
 }
 
 function isTicketChannel(channel) {
-  return channel?.type === ChannelType.GuildText && getTicketData(channel).ticket === "true";
+  if (!channel || channel.type !== ChannelType.GuildText) return false;
+  return getTicketData(channel).ticket === "true";
 }
 
-function ticketMainButtons(data) {
+function getType(typeKey) {
+  return TICKET_TYPES[typeKey] || TICKET_TYPES.support;
+}
+
+function getPriority(priorityKey) {
+  return PRIORITIES[priorityKey] || PRIORITIES.normal;
+}
+
+function ticketEmbed(channel, data) {
+  const type = getType(data.type);
+  const priority = getPriority(data.priority);
+  const claimed =
+    data.claimed && data.claimed !== "0" ? `<@${data.claimed}>` : "قريباً";
+
+  return new EmbedBuilder()
+    .setColor(CONFIG.BLUE_COLOR)
+    .setTitle(`${type.emoji} ${type.label}`)
+    .setDescription(
+      [
+        `**اسم التذكرة:** ${channel.name}`,
+        `**صاحب التذكرة:** <@${data.owner}>`,
+        `**نوع التذكرة:** ${type.label}`,
+        `**الأولوية:** ${priority.emoji} ${priority.label}`,
+        `**التذكرة استلمت بواسطة:** ${claimed}`,
+      ].join("\n")
+    )
+    .setFooter({ text: "BLUE_TICKET_MAIN" })
+    .setTimestamp();
+}
+
+function priorityRow(data) {
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId("ticket_priority")
+    .setPlaceholder(`الأولوية الحالية: ${getPriority(data.priority).label}`)
+    .addOptions(
+      Object.entries(PRIORITIES).map(([value, item]) => ({
+        label: item.label,
+        value,
+        emoji: item.emoji,
+        description: item.description,
+        default: data.priority === value,
+      }))
+    );
+
+  return new ActionRowBuilder().addComponents(menu);
+}
+
+function openButtons(data) {
   const claimed = data.claimed && data.claimed !== "0";
 
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket_claim")
-      .setLabel(claimed ? "تم استلام التذكرة" : "استلام التذكرة")
+      .setLabel(claimed ? "تم الاستلام" : "استلام التذكرة")
       .setEmoji("🙋")
       .setStyle(claimed ? ButtonStyle.Secondary : ButtonStyle.Primary)
       .setDisabled(Boolean(claimed)),
@@ -238,23 +296,6 @@ function ticketMainButtons(data) {
       .setEmoji("🔒")
       .setStyle(ButtonStyle.Danger)
   );
-}
-
-function ticketPriorityMenu(data) {
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId("ticket_change_priority")
-    .setPlaceholder(`الأولوية الحالية: ${priorityName(data.priority)}`)
-    .addOptions(
-      Object.entries(PRIORITIES).map(([value, item]) => ({
-        label: item.label,
-        value,
-        description: item.description,
-        emoji: item.emoji,
-        default: data.priority === value,
-      }))
-    );
-
-  return new ActionRowBuilder().addComponents(menu);
 }
 
 function closedButtons() {
@@ -272,50 +313,85 @@ function closedButtons() {
   );
 }
 
-function ticketInfoEmbed(channel, data) {
-  const type = TICKET_TYPES[data.type] || TICKET_TYPES.support;
-  const claimedText =
-    data.claimed && data.claimed !== "0" ? `<@${data.claimed}>` : "قريباً";
+async function findMainTicketMessage(channel) {
+  const messages = await channel.messages.fetch({ limit: 100 }).catch(() => null);
+  if (!messages) return null;
 
-  return new EmbedBuilder()
-    .setColor(CONFIG.BLUE_COLOR)
-    .setTitle(`${type.emoji} ${type.label}`)
-    .setDescription(
-      [
-        `**اسم التذكرة:** ${channel.name}`,
-        `**صاحب التذكرة:** <@${data.owner}>`,
-        `**نوع التذكرة:** ${type.label}`,
-        `**الأولوية:** ${priorityName(data.priority)}`,
-        `**التذكرة استلمت بواسطة:** ${claimedText}`,
-        "",
-        "استخدم الأزرار بالأسفل لإدارة التذكرة.",
-      ].join("\n")
-    )
-    .setFooter({ text: "نظام التذاكر" })
-    .setTimestamp();
+  return (
+    messages.find(
+      (m) =>
+        m.author.id === client.user.id &&
+        m.embeds?.[0]?.footer?.text === "BLUE_TICKET_MAIN"
+    ) || null
+  );
 }
 
-async function updateTicketInfoMessage(channel) {
+async function refreshMainTicketMessage(channel) {
+  const message = await findMainTicketMessage(channel);
+  if (!message) return;
+
   const data = getTicketData(channel);
-  const messages = await channel.messages.fetch({ limit: 50 }).catch(() => null);
-  if (!messages) return;
 
-  const botMessage = messages.find(
-    (m) =>
-      m.author.id === client.user.id &&
-      m.embeds[0]?.footer?.text === "نظام التذاكر"
-  );
-
-  if (botMessage) {
-    await botMessage
+  if (data.status === "closed") {
+    await message
       .edit({
-        embeds: [ticketInfoEmbed(channel, data)],
-        components: data.status === "closed"
-          ? [closedButtons()]
-          : [ticketPriorityMenu(data), ticketMainButtons(data)],
+        embeds: [ticketEmbed(channel, data)],
+        components: [closedButtons()],
+      })
+      .catch(() => {});
+  } else {
+    await message
+      .edit({
+        embeds: [ticketEmbed(channel, data)],
+        components: [priorityRow(data), openButtons(data)],
       })
       .catch(() => {});
   }
+}
+
+async function sendPriorityNotification(guild, channel, data, changedById, isNew) {
+  const channelId =
+    CONFIG.PRIORITY_NOTIFICATION_CHANNEL_IDS?.[data.type]?.[data.priority];
+
+  if (!isSnowflake(channelId)) return;
+
+  const notifyChannel =
+    guild.channels.cache.get(channelId) ||
+    (await guild.channels.fetch(channelId).catch(() => null));
+
+  if (!notifyChannel?.isTextBased()) return;
+
+  const type = getType(data.type);
+  const priority = getPriority(data.priority);
+
+  const embed = new EmbedBuilder()
+    .setColor(CONFIG.BLUE_COLOR)
+    .setTitle(
+      `${priority.emoji} ${
+        isNew ? "تذكرة جديدة" : "تم تغيير أولوية التذكرة"
+      }`
+    )
+    .addFields(
+      { name: "نوع التذكرة", value: type.label, inline: true },
+      { name: "الأولوية", value: priority.label, inline: true },
+      { name: "صاحب التذكرة", value: `<@${data.owner}>`, inline: true },
+      {
+        name: isNew ? "تم الفتح بواسطة" : "تم التغيير بواسطة",
+        value: `<@${changedById}>`,
+        inline: true,
+      },
+      { name: "اسم التذكرة", value: channel.name, inline: false }
+    )
+    .setTimestamp();
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setLabel("الدخول إلى التذكرة")
+      .setStyle(ButtonStyle.Link)
+      .setURL(`https://discord.com/channels/${guild.id}/${channel.id}`)
+  );
+
+  await notifyChannel.send({ embeds: [embed], components: [row] }).catch(() => {});
 }
 
 async function sendTicketPanel(channel) {
@@ -324,65 +400,87 @@ async function sendTicketPanel(channel) {
     .setTitle("🎫 نظام التذاكر")
     .setDescription(
       [
-        "اختر نوع التذكرة التي تريد فتحها من القائمة بالأسفل.",
+        "اختر نوع التذكرة من القائمة بالأسفل.",
         "",
-        "كل تذكرة تُفتح تلقائياً بأولوية 🔵 **عادي**.",
-        "بعد فتح التذكرة يمكنك تغيير الأولوية من داخلها إلى عادي / مهم / ضروري.",
+        "كل تذكرة تفتح تلقائياً بأولوية 🔵 **عادي**.",
+        "بعد فتح التذكرة تقدر تغيّر الأولوية من داخلها إلى **عادي / مهم / ضروري**.",
       ].join("\n")
     )
-    .setFooter({ text: "اختر القسم المناسب حتى يتم خدمتك بشكل أسرع" });
+    .setFooter({ text: "اختر القسم المناسب" });
 
-  if (CONFIG.PANEL_IMAGE_URL && !CONFIG.PANEL_IMAGE_URL.includes("PUT_YOUR")) {
+  if (CONFIG.PANEL_IMAGE_URL?.startsWith("http")) {
     embed.setImage(CONFIG.PANEL_IMAGE_URL);
   }
 
-  const select = new StringSelectMenuBuilder()
-    .setCustomId("ticket_type_select")
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId("ticket_type")
     .setPlaceholder("اختر نوع التذكرة")
     .addOptions(
       Object.entries(TICKET_TYPES).map(([value, item]) => ({
         label: item.label,
         value,
-        description: item.description.slice(0, 100),
         emoji: item.emoji,
+        description: item.description.slice(0, 100),
       }))
     );
 
   await channel.send({
     embeds: [embed],
-    components: [new ActionRowBuilder().addComponents(select)],
+    components: [new ActionRowBuilder().addComponents(menu)],
   });
 }
+
+// =====================================================
+//                    CREATE TICKET
+// =====================================================
 
 async function createTicket(interaction, typeKey) {
   const guild = interaction.guild;
   const type = TICKET_TYPES[typeKey];
-  const priorityKey = "normal";
-  const priority = PRIORITIES[priorityKey];
 
-  if (!type || !priority) {
-    return interaction.reply({ content: "❌ اختيار غير صحيح.", ephemeral: true });
-  }
-
-  const existing = guild.channels.cache.find((ch) => {
-    if (!isTicketChannel(ch)) return false;
-    const d = getTicketData(ch);
-    return d.owner === interaction.user.id && d.status === "open";
-  });
-
-  if (existing) {
+  if (!type) {
     return interaction.reply({
-      content: `❌ لديك تذكرة مفتوحة بالفعل: ${existing}`,
+      content: "❌ نوع التذكرة غير صحيح.",
       ephemeral: true,
     });
   }
 
-  const parentId = CONFIG.TICKET_CATEGORY_IDS[typeKey];
-  const everyoneId = guild.roles.everyone.id;
+  const categoryId = CONFIG.TICKET_CATEGORY_IDS[typeKey];
+
+  if (!isSnowflake(categoryId)) {
+    return interaction.reply({
+      content: `❌ كاتجوري **${type.label}** لم يتم وضع ID صحيح لها في index.js.`,
+      ephemeral: true,
+    });
+  }
+
+  const existing = guild.channels.cache.find((channel) => {
+    if (!isTicketChannel(channel)) return false;
+    const data = getTicketData(channel);
+    return data.owner === interaction.user.id && data.status === "open";
+  });
+
+  if (existing) {
+    return interaction.reply({
+      content: `❌ عندك تذكرة مفتوحة بالفعل: ${existing}`,
+      ephemeral: true,
+    });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  const roleIds = [
+    ...new Set([
+      ...validIds(CONFIG.TICKET_STAFF_ROLE_IDS),
+      ...validIds(CONFIG.REOPEN_ROLE_IDS),
+      ...validIds(CONFIG.DELETE_ROLE_IDS),
+      ...validIds(CONFIG.CLOSED_VIEW_ROLE_IDS),
+    ]),
+  ];
 
   const permissionOverwrites = [
     {
-      id: everyoneId,
+      id: guild.roles.everyone.id,
       deny: [PermissionFlagsBits.ViewChannel],
     },
     {
@@ -395,248 +493,246 @@ async function createTicket(interaction, typeKey) {
         PermissionFlagsBits.EmbedLinks,
       ],
     },
-    ...CONFIG.TICKET_STAFF_ROLE_IDS.filter(Boolean).map((id) => ({
-      id,
+    ...roleIds.map((roleId) => ({
+      id: roleId,
       allow: [
         PermissionFlagsBits.ViewChannel,
         PermissionFlagsBits.SendMessages,
         PermissionFlagsBits.ReadMessageHistory,
-        PermissionFlagsBits.ManageMessages,
-      ],
-    })),
-    ...CONFIG.REOPEN_ROLE_IDS.filter(Boolean).map((id) => ({
-      id,
-      allow: [
-        PermissionFlagsBits.ViewChannel,
-        PermissionFlagsBits.SendMessages,
-        PermissionFlagsBits.ReadMessageHistory,
-      ],
-    })),
-    ...CONFIG.DELETE_ROLE_IDS.filter(Boolean).map((id) => ({
-      id,
-      allow: [
-        PermissionFlagsBits.ViewChannel,
-        PermissionFlagsBits.SendMessages,
-        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
       ],
     })),
   ];
 
-  const channel = await guild.channels.create({
-    name: `${CONFIG.TICKET_PREFIX}-${typeKey}-${safeName(interaction.user.username)}`,
-    type: ChannelType.GuildText,
-    parent: parentId || null,
-    topic: buildTopic({
-      owner: interaction.user.id,
-      type: typeKey,
-      priority: priorityKey,
-      claimed: "0",
-      status: "open",
-    }),
-    permissionOverwrites,
-  });
+  let channel;
+
+  try {
+    channel = await guild.channels.create({
+      name: `${CONFIG.TICKET_PREFIX}-${typeKey}-${safeName(
+        interaction.user.username
+      )}`,
+      type: ChannelType.GuildText,
+      parent: categoryId,
+      topic: buildTopic({
+        owner: interaction.user.id,
+        type: typeKey,
+        priority: "normal",
+        claimed: "0",
+        status: "open",
+      }),
+      permissionOverwrites,
+    });
+  } catch (error) {
+    console.error("CREATE TICKET ERROR:", error);
+    return interaction.editReply(
+      "❌ البوت لم يقدر ينشئ التذكرة. تأكد أن ID الكاتجوري صحيح وأن البوت عنده Manage Channels."
+    );
+  }
 
   const data = getTicketData(channel);
 
   await channel.send({
-    content: `<@${interaction.user.id}> ${CONFIG.TICKET_STAFF_ROLE_IDS.map((id) => `<@&${id}>`).join(" ")}`,
-    embeds: [ticketInfoEmbed(channel, data)],
-    components: [ticketPriorityMenu(data), ticketMainButtons(data)],
+    content: `<@${interaction.user.id}> ${validIds(CONFIG.TICKET_STAFF_ROLE_IDS)
+      .map((id) => `<@&${id}>`)
+      .join(" ")}`,
+    embeds: [ticketEmbed(channel, data)],
+    components: [priorityRow(data), openButtons(data)],
     allowedMentions: {
       users: [interaction.user.id],
-      roles: CONFIG.TICKET_STAFF_ROLE_IDS,
+      roles: validIds(CONFIG.TICKET_STAFF_ROLE_IDS),
     },
   });
 
-  await sendPriorityNotification(guild, channel, data, interaction.user.id, true);
-
-  await interaction.reply({
-    content: `✅ تم فتح تذكرتك بنجاح: ${channel}\n🔵 تم تعيين الأولوية تلقائياً إلى **عادي**، ويمكنك تغييرها من داخل التذكرة.`,
-    ephemeral: true,
-  });
-}
-
-async function sendPriorityNotification(guild, channel, data, changedById, isNew = false) {
-  const notificationId = CONFIG.PRIORITY_NOTIFICATION_CHANNEL_IDS?.[data.type]?.[data.priority];
-  const notifyChannel = guild.channels.cache.get(notificationId);
-  if (!notifyChannel?.isTextBased()) return;
-
-  const type = TICKET_TYPES[data.type] || TICKET_TYPES.support;
-  const priority = PRIORITIES[data.priority] || PRIORITIES.normal;
-  const jumpUrl = `https://discord.com/channels/${guild.id}/${channel.id}`;
-
-  const embed = new EmbedBuilder()
-    .setColor(CONFIG.BLUE_COLOR)
-    .setTitle(`${priority.emoji} ${isNew ? "تذكرة جديدة" : "تم تغيير أولوية التذكرة"}`)
-    .addFields(
-      { name: "نوع التذكرة", value: type.label, inline: true },
-      { name: "الأولوية", value: priority.label, inline: true },
-      { name: "صاحب التذكرة", value: `<@${data.owner}>`, inline: true },
-      { name: isNew ? "تم الفتح بواسطة" : "تم التغيير بواسطة", value: `<@${changedById}>`, inline: true },
-      { name: "اسم التذكرة", value: channel.name, inline: false }
-    )
-    .setTimestamp();
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setLabel("الدخول إلى التذكرة")
-      .setStyle(ButtonStyle.Link)
-      .setURL(jumpUrl)
+  await sendPriorityNotification(
+    guild,
+    channel,
+    data,
+    interaction.user.id,
+    true
   );
 
-  await notifyChannel.send({ embeds: [embed], components: [row] }).catch(() => {});
+  await interaction.editReply(
+    `✅ تم فتح تذكرتك: ${channel}\n🔵 الأولوية الافتراضية: **عادي**`
+  );
 }
+
+// =====================================================
+//                    CLOSE TICKET
+// =====================================================
 
 async function closeTicket(interaction, reason) {
   const channel = interaction.channel;
   const data = getTicketData(channel);
 
-  const canClose =
-    memberHasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) ||
-    interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-
-  if (!canClose) {
+  if (
+    !hasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) &&
+    !canAdmin(interaction.member)
+  ) {
     return interaction.reply({
       content: "❌ ليس لديك صلاحية إغلاق التذكرة.",
       ephemeral: true,
     });
   }
 
-  // نرد على التفاعل فوراً حتى لا ينتهي وقت الـ interaction
+  if (data.status === "closed") {
+    return interaction.reply({
+      content: "❌ التذكرة مغلقة بالفعل.",
+      ephemeral: true,
+    });
+  }
+
   await interaction.deferReply({ ephemeral: true });
 
-  const closeTime = new Date();
-  const type = TICKET_TYPES[data.type] || TICKET_TYPES.support;
-  const claimedBy =
-    data.claimed && data.claimed !== "0" ? `<@${data.claimed}>` : "لم يتم الاستلام";
+  const type = getType(data.type);
+  const priority = getPriority(data.priority);
+  const unix = Math.floor(Date.now() / 1000);
+  const claimed =
+    data.claimed && data.claimed !== "0"
+      ? `<@${data.claimed}>`
+      : "لم يتم الاستلام";
 
-  const dmEmbed = new EmbedBuilder()
+  const closeEmbed = new EmbedBuilder()
     .setColor(CONFIG.BLUE_COLOR)
     .setTitle("🔒 تم إغلاق التذكرة")
     .addFields(
+      { name: "اسم التذكرة", value: channel.name, inline: false },
       { name: "صاحب التذكرة", value: `<@${data.owner}>`, inline: true },
       { name: "نوع التذكرة", value: type.label, inline: true },
-      { name: "الأولوية", value: priorityName(data.priority), inline: true },
-      { name: "استلمت بواسطة", value: claimedBy, inline: true },
-      { name: "تم القفل بواسطة", value: `<@${interaction.user.id}>`, inline: true },
       {
-        name: "وقت الإغلاق",
-        value: `<t:${Math.floor(closeTime.getTime() / 1000)}:F>`,
-        inline: false,
+        name: "الأولوية",
+        value: `${priority.emoji} ${priority.label}`,
+        inline: true,
       },
+      { name: "استلمت بواسطة", value: claimed, inline: true },
+      {
+        name: "تم القفل بواسطة",
+        value: `<@${interaction.user.id}>`,
+        inline: true,
+      },
+      { name: "وقت الإغلاق", value: `<t:${unix}:F>`, inline: false },
       { name: "سبب الإغلاق", value: reason.slice(0, 1024), inline: false }
     )
     .setTimestamp();
 
-  // إرسال DM لصاحب التذكرة
+  // DM لصاحب التذكرة
   const owner = await client.users.fetch(data.owner).catch(() => null);
   if (owner) {
-    await owner.send({ embeds: [dmEmbed] }).catch(() => {});
+    await owner.send({ embeds: [closeEmbed] }).catch(() => {});
   }
 
-  // إرسال DM للشخص الذي استلم التذكرة إن وجد
+  // DM للشخص المستلم
   if (data.claimed && data.claimed !== "0" && data.claimed !== data.owner) {
     const claimer = await client.users.fetch(data.claimed).catch(() => null);
     if (claimer) {
-      await claimer.send({ embeds: [dmEmbed] }).catch(() => {});
+      await claimer.send({ embeds: [closeEmbed] }).catch(() => {});
     }
   }
 
-  // اللوج
-  const logChannel = interaction.guild.channels.cache.get(CONFIG.CLOSE_LOG_CHANNEL_ID);
-  if (logChannel?.isTextBased()) {
-    await logChannel.send({
-      embeds: [
-        EmbedBuilder.from(dmEmbed)
-          .setTitle("📋 سجل إغلاق تذكرة")
-          .addFields({ name: "اسم التذكرة", value: channel.name, inline: false }),
-      ],
-    }).catch(() => {});
+  // لوج الإغلاق
+  if (isSnowflake(CONFIG.CLOSE_LOG_CHANNEL_ID)) {
+    const logChannel =
+      interaction.guild.channels.cache.get(CONFIG.CLOSE_LOG_CHANNEL_ID) ||
+      (await interaction.guild.channels
+        .fetch(CONFIG.CLOSE_LOG_CHANNEL_ID)
+        .catch(() => null));
+
+    if (logChannel?.isTextBased()) {
+      await logChannel.send({ embeds: [closeEmbed] }).catch(() => {});
+    }
   }
 
-  // أولاً نحفظ حالة التذكرة كمغلقة
+  // حفظ الحالة كمغلقة
   const updated = { ...data, status: "closed" };
+
   await channel.setTopic(buildTopic(updated)).catch(() => {});
   await channel
     .setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95))
     .catch(() => {});
 
-  const closedEmbed = new EmbedBuilder()
-    .setColor(CONFIG.BLUE_COLOR)
-    .setTitle("🔒 تم إغلاق التذكرة")
-    .setDescription(
-      [
-        `**صاحب التذكرة:** <@${data.owner}>`,
-        `**نوع التذكرة:** ${type.label}`,
-        `**الأولوية:** ${priorityName(data.priority)}`,
-        `**استلمت بواسطة:** ${claimedBy}`,
-        `**تم القفل بواسطة:** <@${interaction.user.id}>`,
-        `**سبب الإغلاق:** ${reason}`,
-        `**وقت الإغلاق:** <t:${Math.floor(closeTime.getTime() / 1000)}:F>`,
-      ].join("\n")
-    )
-    .setFooter({ text: "التذكرة مغلقة وتظهر للإدارة فقط" })
-    .setTimestamp();
-
-  // مهم جداً: نبعت بانل إعادة الفتح والحذف قبل إخفاء التذكرة من أي رول
+  // بانل الإغلاق تُرسل قبل تغيير الصلاحيات
   await channel.send({
-    embeds: [closedEmbed],
+    embeds: [
+      EmbedBuilder.from(closeEmbed).setFooter({
+        text: "التذكرة مغلقة - الإدارة فقط",
+      }),
+    ],
     components: [closedButtons()],
   });
 
-  // نحدّث البانل الأصلية أيضاً لتظهر كـ مغلقة بأزرار إعادة الفتح والحذف
-  await updateTicketInfoMessage(channel).catch(() => {});
+  // تحديث البانل الرئيسية
+  await refreshMainTicketMessage(channel);
 
-  // بعد إرسال البانل نخفي التذكرة من صاحبها
-  await channel.permissionOverwrites.edit(data.owner, {
-    ViewChannel: false,
-    SendMessages: false,
-  }).catch(() => {});
+  // صاحب التذكرة لا يرى التذكرة بعد الإغلاق
+  await channel.permissionOverwrites
+    .edit(data.owner, {
+      ViewChannel: false,
+      SendMessages: false,
+    })
+    .catch(() => {});
 
-  // نخفيها من رولات الاستلام/الإغلاق إلا لو لهم صلاحية العرض بعد الإغلاق
-  for (const roleId of CONFIG.TICKET_STAFF_ROLE_IDS) {
+  // أي Member أُضيف للتذكرة يتم إخفاؤه بعد الإغلاق
+  for (const overwrite of channel.permissionOverwrites.cache.values()) {
     if (
-      !CONFIG.CLOSED_VIEW_ROLE_IDS.includes(roleId) &&
-      !CONFIG.REOPEN_ROLE_IDS.includes(roleId) &&
-      !CONFIG.DELETE_ROLE_IDS.includes(roleId)
+      overwrite.type === OverwriteType.Member &&
+      overwrite.id !== client.user.id &&
+      overwrite.id !== data.owner
     ) {
-      await channel.permissionOverwrites.edit(roleId, {
-        ViewChannel: false,
-        SendMessages: false,
-      }).catch(() => {});
+      await channel.permissionOverwrites
+        .edit(overwrite.id, {
+          ViewChannel: false,
+          SendMessages: false,
+        })
+        .catch(() => {});
     }
   }
 
-  // رولات الإدارة التي تظل ترى التذكرة بعد الإغلاق
-  for (const roleId of new Set([
-    ...CONFIG.CLOSED_VIEW_ROLE_IDS,
-    ...CONFIG.REOPEN_ROLE_IDS,
-    ...CONFIG.DELETE_ROLE_IDS,
-  ])) {
-    if (!roleId) continue;
+  const keepVisibleRoles = new Set([
+    ...validIds(CONFIG.CLOSED_VIEW_ROLE_IDS),
+    ...validIds(CONFIG.REOPEN_ROLE_IDS),
+    ...validIds(CONFIG.DELETE_ROLE_IDS),
+  ]);
 
-    await channel.permissionOverwrites.edit(roleId, {
-      ViewChannel: true,
-      SendMessages: true,
-      ReadMessageHistory: true,
-    }).catch(() => {});
+  // رول الستاف العادي يختفي إلا لو موجود ضمن رولات التذاكر المغلقة
+  for (const roleId of validIds(CONFIG.TICKET_STAFF_ROLE_IDS)) {
+    if (!keepVisibleRoles.has(roleId)) {
+      await channel.permissionOverwrites
+        .edit(roleId, {
+          ViewChannel: false,
+          SendMessages: false,
+        })
+        .catch(() => {});
+    }
   }
 
-  // تأكيد خاص للشخص الذي أغلق التذكرة
-  await interaction.editReply({
-    content: "✅ تم إغلاق التذكرة وإظهار بانل **إعادة فتح / حذف** للإدارة.",
-  }).catch(() => {});
+  // رولات الإدارة بعد الإغلاق
+  for (const roleId of keepVisibleRoles) {
+    await channel.permissionOverwrites
+      .edit(roleId, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true,
+      })
+      .catch(() => {});
+  }
+
+  await interaction.editReply(
+    "✅ تم إغلاق التذكرة، وتم إظهار بانل **إعادة فتح / حذف** للإدارة."
+  );
 }
+
+// =====================================================
+//                    REOPEN TICKET
+// =====================================================
 
 async function reopenTicket(interaction) {
   const channel = interaction.channel;
   const data = getTicketData(channel);
 
-  const allowed =
-    memberHasAnyRole(interaction.member, CONFIG.REOPEN_ROLE_IDS) ||
-    interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-
-  if (!allowed) {
+  if (
+    !hasAnyRole(interaction.member, CONFIG.REOPEN_ROLE_IDS) &&
+    !canAdmin(interaction.member)
+  ) {
     return interaction.reply({
       content: "❌ ليس لديك صلاحية إعادة فتح التذكرة.",
       ephemeral: true,
@@ -650,52 +746,71 @@ async function reopenTicket(interaction) {
     });
   }
 
-  await channel.permissionOverwrites.edit(data.owner, {
-    ViewChannel: true,
-    SendMessages: true,
-    ReadMessageHistory: true,
-  });
+  await interaction.deferReply({ ephemeral: true });
 
-  for (const roleId of CONFIG.TICKET_STAFF_ROLE_IDS) {
-    if (!roleId) continue;
-    await channel.permissionOverwrites.edit(roleId, {
+  const updated = { ...data, status: "open" };
+  await channel.setTopic(buildTopic(updated)).catch(() => {});
+  await channel
+    .setName(channel.name.replace(/^closed-/, "").slice(0, 95))
+    .catch(() => {});
+
+  // إظهارها لصاحبها
+  await channel.permissionOverwrites
+    .edit(data.owner, {
       ViewChannel: true,
       SendMessages: true,
       ReadMessageHistory: true,
-    }).catch(() => {});
+      AttachFiles: true,
+      EmbedLinks: true,
+    })
+    .catch(() => {});
+
+  // إظهارها لرولات الاستلام والإغلاق
+  for (const roleId of validIds(CONFIG.TICKET_STAFF_ROLE_IDS)) {
+    await channel.permissionOverwrites
+      .edit(roleId, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true,
+      })
+      .catch(() => {});
   }
 
-  const updated = { ...data, status: "open" };
-  await channel.setTopic(buildTopic(updated));
-  await channel.setName(channel.name.replace(/^closed-/, "").slice(0, 95)).catch(() => {});
+  await refreshMainTicketMessage(channel);
 
   const owner = await client.users.fetch(data.owner).catch(() => null);
-  if (owner) {
-    const dmEmbed = new EmbedBuilder()
-      .setColor(CONFIG.BLUE_COLOR)
-      .setTitle("🔓 تم إعادة فتح تذكرتك")
-      .setDescription(`تم إعادة فتح التذكرة بواسطة <@${interaction.user.id}>.`)
-      .setTimestamp();
 
-    const jumpButton = new ActionRowBuilder().addComponents(
+  if (owner) {
+    const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setLabel("الدخول إلى التذكرة")
         .setStyle(ButtonStyle.Link)
-        .setURL(`https://discord.com/channels/${interaction.guild.id}/${channel.id}`)
+        .setURL(
+          `https://discord.com/channels/${interaction.guild.id}/${channel.id}`
+        )
     );
 
-    await owner.send({
-      embeds: [dmEmbed],
-      components: [jumpButton],
-    }).catch(() => {});
+    const embed = new EmbedBuilder()
+      .setColor(CONFIG.BLUE_COLOR)
+      .setTitle("🔓 تم إعادة فتح تذكرتك")
+      .setDescription(
+        `تم إعادة فتح التذكرة بواسطة <@${interaction.user.id}>.`
+      )
+      .setTimestamp();
+
+    await owner.send({ embeds: [embed], components: [row] }).catch(() => {});
   }
 
-  await interaction.reply({
-    content: `✅ تم إعادة فتح التذكرة بواسطة ${interaction.user}.`,
-  });
+  await channel
+    .send(`🔓 تم إعادة فتح التذكرة بواسطة ${interaction.user}.`)
+    .catch(() => {});
 
-  await updateTicketInfoMessage(channel);
+  await interaction.editReply("✅ تم إعادة فتح التذكرة.");
 }
+
+// =====================================================
+//                      EVENTS
+// =====================================================
 
 client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
@@ -703,60 +818,87 @@ client.once("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if (message.author.bot || !message.guild) return;
+  if (!message.guild || message.author.bot) return;
 
-  if (message.content.trim().toLowerCase() === "!ticketpanel") {
-    const allowed =
-      memberHasAnyRole(message.member, CONFIG.PANEL_ROLE_IDS) ||
-      message.member.permissions.has(PermissionFlagsBits.Administrator);
+  if (message.content.trim().toLowerCase() !== "!ticketpanel") return;
 
-    if (!allowed) {
-      return message.reply("❌ ليس لديك صلاحية إرسال بانل التذاكر.");
-    }
-
-    await sendTicketPanel(message.channel);
-    await message.delete().catch(() => {});
+  if (
+    !hasAnyRole(message.member, CONFIG.PANEL_ROLE_IDS) &&
+    !canAdmin(message.member)
+  ) {
+    return message.reply("❌ ليس لديك صلاحية إرسال بانل التذاكر.");
   }
+
+  await sendTicketPanel(message.channel);
+  await message.delete().catch(() => {});
 });
 
 client.on("interactionCreate", async (interaction) => {
   try {
-    // اختيار نوع التذكرة: تُفتح مباشرة بأولوية عادي
-    if (interaction.isStringSelectMenu() && interaction.customId === "ticket_type_select") {
-      const typeKey = interaction.values[0];
-      return createTicket(interaction, typeKey);
+    // اختيار نوع التذكرة
+    if (
+      interaction.isStringSelectMenu() &&
+      interaction.customId === "ticket_type"
+    ) {
+      return createTicket(interaction, interaction.values[0]);
     }
 
-    // تغيير الأولوية من داخل التذكرة
-    if (interaction.isStringSelectMenu() && interaction.customId === "ticket_change_priority") {
+    // باقي التفاعلات تعمل داخل التذكرة فقط
+    if (
+      (interaction.isButton() ||
+        interaction.isModalSubmit() ||
+        interaction.isStringSelectMenu()) &&
+      interaction.customId?.startsWith("ticket_")
+    ) {
       if (!isTicketChannel(interaction.channel)) {
-        return interaction.reply({ content: "❌ هذا الاختيار يعمل داخل التذكرة فقط.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ هذا الخيار يعمل داخل التذكرة فقط.",
+          ephemeral: true,
+        });
       }
+    }
 
-      const channel = interaction.channel;
-      const data = getTicketData(channel);
+    if (!isTicketChannel(interaction.channel)) return;
+
+    const channel = interaction.channel;
+    const data = getTicketData(channel);
+
+    // تغيير الأولوية
+    if (
+      interaction.isStringSelectMenu() &&
+      interaction.customId === "ticket_priority"
+    ) {
+      if (data.status !== "open") {
+        return interaction.reply({
+          content: "❌ لا يمكن تغيير أولوية تذكرة مغلقة.",
+          ephemeral: true,
+        });
+      }
 
       const allowed =
         interaction.user.id === data.owner ||
-        memberHasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) ||
-        interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+        hasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) ||
+        canAdmin(interaction.member);
 
       if (!allowed) {
-        return interaction.reply({ content: "❌ ليس لديك صلاحية تغيير أولوية هذه التذكرة.", ephemeral: true });
-      }
-
-      if (data.status === "closed") {
-        return interaction.reply({ content: "❌ لا يمكن تغيير أولوية تذكرة مغلقة.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ ليس لديك صلاحية تغيير الأولوية.",
+          ephemeral: true,
+        });
       }
 
       const newPriority = interaction.values[0];
+
       if (!PRIORITIES[newPriority]) {
-        return interaction.reply({ content: "❌ أولوية غير صحيحة.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ أولوية غير صحيحة.",
+          ephemeral: true,
+        });
       }
 
       if (data.priority === newPriority) {
         return interaction.reply({
-          content: `ℹ️ التذكرة بالفعل بالأولوية **${priorityName(newPriority)}**.`,
+          content: `ℹ️ الأولوية بالفعل **${getPriority(newPriority).label}**.`,
           ephemeral: true,
         });
       }
@@ -765,44 +907,40 @@ client.on("interactionCreate", async (interaction) => {
       await channel.setTopic(buildTopic(updated));
 
       await interaction.reply({
-        content: `${PRIORITIES[newPriority].emoji} تم تغيير أولوية التذكرة إلى **${priorityName(newPriority)}** بواسطة ${interaction.user}.`,
+        content: `${getPriority(newPriority).emoji} تم تغيير الأولوية إلى **${
+          getPriority(newPriority).label
+        }** بواسطة ${interaction.user}.`,
       });
 
-      await sendPriorityNotification(interaction.guild, channel, updated, interaction.user.id, false);
-      await updateTicketInfoMessage(channel);
+      await sendPriorityNotification(
+        interaction.guild,
+        channel,
+        updated,
+        interaction.user.id,
+        false
+      );
+
+      await refreshMainTicketMessage(channel);
       return;
     }
 
-    if (!interaction.isButton() && !interaction.isModalSubmit()) return;
-
-    if (!isTicketChannel(interaction.channel)) {
-      if (interaction.isButton() && interaction.customId.startsWith("ticket_")) {
+    // استلام
+    if (interaction.isButton() && interaction.customId === "ticket_claim") {
+      if (data.status !== "open") {
         return interaction.reply({
-          content: "❌ هذا الزر يعمل داخل التذاكر فقط.",
+          content: "❌ التذكرة مغلقة.",
           ephemeral: true,
         });
       }
-      return;
-    }
 
-    const channel = interaction.channel;
-    const data = getTicketData(channel);
-
-    // استلام التذكرة
-    if (interaction.isButton() && interaction.customId === "ticket_claim") {
-      const allowed =
-        memberHasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) ||
-        interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-
-      if (!allowed) {
+      if (
+        !hasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) &&
+        !canAdmin(interaction.member)
+      ) {
         return interaction.reply({
           content: "❌ ليس لديك صلاحية استلام التذكرة.",
           ephemeral: true,
         });
-      }
-
-      if (data.status === "closed") {
-        return interaction.reply({ content: "❌ التذكرة مغلقة.", ephemeral: true });
       }
 
       if (data.claimed && data.claimed !== "0") {
@@ -815,18 +953,24 @@ client.on("interactionCreate", async (interaction) => {
       const updated = { ...data, claimed: interaction.user.id };
       await channel.setTopic(buildTopic(updated));
 
-      await interaction.reply({
-        content: `🙋 تم استلام التذكرة بواسطة ${interaction.user}.`,
-      });
+      await interaction.reply(
+        `🙋 تم استلام التذكرة بواسطة ${interaction.user}.`
+      );
 
-      await updateTicketInfoMessage(channel);
+      await refreshMainTicketMessage(channel);
       return;
     }
 
-    // إضافة شخص - أي شخص لديه وصول للتذكرة يستطيع الضغط
-    if (interaction.isButton() && interaction.customId === "ticket_add_user") {
-      if (data.status === "closed") {
-        return interaction.reply({ content: "❌ التذكرة مغلقة.", ephemeral: true });
+    // إضافة شخص
+    if (
+      interaction.isButton() &&
+      interaction.customId === "ticket_add_user"
+    ) {
+      if (data.status !== "open") {
+        return interaction.reply({
+          content: "❌ التذكرة مغلقة.",
+          ephemeral: true,
+        });
       }
 
       const modal = new ModalBuilder()
@@ -835,8 +979,8 @@ client.on("interactionCreate", async (interaction) => {
 
       const input = new TextInputBuilder()
         .setCustomId("user_id")
-        .setLabel("اكتب ID الشخص")
-        .setPlaceholder("مثال: 123456789012345678")
+        .setLabel("ID الشخص")
+        .setPlaceholder("123456789012345678")
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -844,17 +988,33 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.showModal(modal);
     }
 
-    if (interaction.isModalSubmit() && interaction.customId === "ticket_add_user_modal") {
-      if (data.status === "closed") {
-        return interaction.reply({ content: "❌ التذكرة مغلقة.", ephemeral: true });
+    if (
+      interaction.isModalSubmit() &&
+      interaction.customId === "ticket_add_user_modal"
+    ) {
+      if (data.status !== "open") {
+        return interaction.reply({
+          content: "❌ التذكرة مغلقة.",
+          ephemeral: true,
+        });
       }
 
       const userId = interaction.fields.getTextInputValue("user_id").trim();
-      const member = await interaction.guild.members.fetch(userId).catch(() => null);
+
+      if (!isSnowflake(userId)) {
+        return interaction.reply({
+          content: "❌ الـ ID غير صحيح.",
+          ephemeral: true,
+        });
+      }
+
+      const member = await interaction.guild.members
+        .fetch(userId)
+        .catch(() => null);
 
       if (!member) {
         return interaction.reply({
-          content: "❌ لم يتم العثور على عضو بهذا الـ ID داخل السيرفر.",
+          content: "❌ الشخص غير موجود داخل السيرفر.",
           ephemeral: true,
         });
       }
@@ -867,18 +1027,17 @@ client.on("interactionCreate", async (interaction) => {
         EmbedLinks: true,
       });
 
-      return interaction.reply({
-        content: `✅ تم إضافة ${member} إلى التذكرة بواسطة ${interaction.user}.`,
-      });
+      return interaction.reply(
+        `✅ تم إضافة ${member} للتذكرة بواسطة ${interaction.user}.`
+      );
     }
 
-    // زر الإغلاق
+    // إغلاق - فتح المودال
     if (interaction.isButton() && interaction.customId === "ticket_close") {
-      const allowed =
-        memberHasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) ||
-        interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-
-      if (!allowed) {
+      if (
+        !hasAnyRole(interaction.member, CONFIG.TICKET_STAFF_ROLE_IDS) &&
+        !canAdmin(interaction.member)
+      ) {
         return interaction.reply({
           content: "❌ ليس لديك صلاحية إغلاق التذكرة.",
           ephemeral: true,
@@ -890,9 +1049,9 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("إغلاق التذكرة");
 
       const reason = new TextInputBuilder()
-        .setCustomId("close_reason")
+        .setCustomId("reason")
         .setLabel("سبب الإغلاق")
-        .setPlaceholder("اكتب سبب إغلاق التذكرة...")
+        .setPlaceholder("اكتب سبب الإغلاق...")
         .setStyle(TextInputStyle.Paragraph)
         .setMinLength(2)
         .setMaxLength(1000)
@@ -902,23 +1061,32 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.showModal(modal);
     }
 
-    if (interaction.isModalSubmit() && interaction.customId === "ticket_close_modal") {
-      const reason = interaction.fields.getTextInputValue("close_reason");
+    // إغلاق - إرسال المودال
+    if (
+      interaction.isModalSubmit() &&
+      interaction.customId === "ticket_close_modal"
+    ) {
+      const reason = interaction.fields.getTextInputValue("reason");
       return closeTicket(interaction, reason);
     }
 
     // إعادة فتح
-    if (interaction.isButton() && interaction.customId === "ticket_reopen") {
+    if (
+      interaction.isButton() &&
+      interaction.customId === "ticket_reopen"
+    ) {
       return reopenTicket(interaction);
     }
 
     // حذف
-    if (interaction.isButton() && interaction.customId === "ticket_delete") {
-      const allowed =
-        memberHasAnyRole(interaction.member, CONFIG.DELETE_ROLE_IDS) ||
-        interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-
-      if (!allowed) {
+    if (
+      interaction.isButton() &&
+      interaction.customId === "ticket_delete"
+    ) {
+      if (
+        !hasAnyRole(interaction.member, CONFIG.DELETE_ROLE_IDS) &&
+        !canAdmin(interaction.member)
+      ) {
         return interaction.reply({
           content: "❌ ليس لديك صلاحية حذف التذكرة.",
           ephemeral: true,
@@ -927,23 +1095,27 @@ client.on("interactionCreate", async (interaction) => {
 
       if (data.status !== "closed") {
         return interaction.reply({
-          content: "❌ لا يمكن حذف التذكرة قبل إغلاقها.",
+          content: "❌ لازم التذكرة تكون مغلقة قبل حذفها.",
           ephemeral: true,
         });
       }
 
       await interaction.reply({
-        content: `🗑️ يتم حذف التذكرة بواسطة ${interaction.user}.`,
+        content: `🗑️ يتم حذف التذكرة بواسطة ${interaction.user}...`,
       });
 
-      setTimeout(() => channel.delete("Ticket deleted").catch(() => {}), 1500);
+      setTimeout(() => {
+        channel.delete("Closed ticket deleted").catch(console.error);
+      }, 1500);
+
       return;
     }
   } catch (error) {
-    console.error("Interaction error:", error);
+    console.error("INTERACTION ERROR:", error);
 
     const payload = {
-      content: "❌ حدث خطأ غير متوقع. تأكد من الـ IDs وصلاحيات البوت.",
+      content:
+        "❌ حصل خطأ. راجع Railway Logs وتأكد من الـ IDs وصلاحيات البوت.",
       ephemeral: true,
     };
 
@@ -954,6 +1126,10 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 });
+
+// =====================================================
+//                       LOGIN
+// =====================================================
 
 process.on("unhandledRejection", console.error);
 process.on("uncaughtException", console.error);
