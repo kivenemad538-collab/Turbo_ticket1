@@ -502,6 +502,9 @@ async function closeTicket(interaction, reason) {
     });
   }
 
+  // نرد على التفاعل فوراً حتى لا ينتهي وقت الـ interaction
+  await interaction.deferReply({ ephemeral: true });
+
   const closeTime = new Date();
   const type = TICKET_TYPES[data.type] || TICKET_TYPES.support;
   const claimedBy =
@@ -551,39 +554,12 @@ async function closeTicket(interaction, reason) {
     }).catch(() => {});
   }
 
-  // إخفاء التذكرة من صاحبها، وإبقاؤها للإدارة فقط
-  await channel.permissionOverwrites.edit(data.owner, {
-    ViewChannel: false,
-    SendMessages: false,
-  }).catch(() => {});
-
-  // نخفيها من رولات الاستلام/الإغلاق إلا لو هم أيضاً من رولات العرض بعد الإغلاق
-  for (const roleId of CONFIG.TICKET_STAFF_ROLE_IDS) {
-    if (!CONFIG.CLOSED_VIEW_ROLE_IDS.includes(roleId) &&
-        !CONFIG.REOPEN_ROLE_IDS.includes(roleId) &&
-        !CONFIG.DELETE_ROLE_IDS.includes(roleId)) {
-      await channel.permissionOverwrites.edit(roleId, {
-        ViewChannel: false,
-      }).catch(() => {});
-    }
-  }
-
-  for (const roleId of new Set([
-    ...CONFIG.CLOSED_VIEW_ROLE_IDS,
-    ...CONFIG.REOPEN_ROLE_IDS,
-    ...CONFIG.DELETE_ROLE_IDS,
-  ])) {
-    if (!roleId) continue;
-    await channel.permissionOverwrites.edit(roleId, {
-      ViewChannel: true,
-      SendMessages: true,
-      ReadMessageHistory: true,
-    }).catch(() => {});
-  }
-
+  // أولاً نحفظ حالة التذكرة كمغلقة
   const updated = { ...data, status: "closed" };
   await channel.setTopic(buildTopic(updated)).catch(() => {});
-  await channel.setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95)).catch(() => {});
+  await channel
+    .setName(`closed-${channel.name.replace(/^closed-/, "")}`.slice(0, 95))
+    .catch(() => {});
 
   const closedEmbed = new EmbedBuilder()
     .setColor(CONFIG.BLUE_COLOR)
@@ -602,10 +578,54 @@ async function closeTicket(interaction, reason) {
     .setFooter({ text: "التذكرة مغلقة وتظهر للإدارة فقط" })
     .setTimestamp();
 
-  await interaction.reply({
+  // مهم جداً: نبعت بانل إعادة الفتح والحذف قبل إخفاء التذكرة من أي رول
+  await channel.send({
     embeds: [closedEmbed],
     components: [closedButtons()],
   });
+
+  // نحدّث البانل الأصلية أيضاً لتظهر كـ مغلقة بأزرار إعادة الفتح والحذف
+  await updateTicketInfoMessage(channel).catch(() => {});
+
+  // بعد إرسال البانل نخفي التذكرة من صاحبها
+  await channel.permissionOverwrites.edit(data.owner, {
+    ViewChannel: false,
+    SendMessages: false,
+  }).catch(() => {});
+
+  // نخفيها من رولات الاستلام/الإغلاق إلا لو لهم صلاحية العرض بعد الإغلاق
+  for (const roleId of CONFIG.TICKET_STAFF_ROLE_IDS) {
+    if (
+      !CONFIG.CLOSED_VIEW_ROLE_IDS.includes(roleId) &&
+      !CONFIG.REOPEN_ROLE_IDS.includes(roleId) &&
+      !CONFIG.DELETE_ROLE_IDS.includes(roleId)
+    ) {
+      await channel.permissionOverwrites.edit(roleId, {
+        ViewChannel: false,
+        SendMessages: false,
+      }).catch(() => {});
+    }
+  }
+
+  // رولات الإدارة التي تظل ترى التذكرة بعد الإغلاق
+  for (const roleId of new Set([
+    ...CONFIG.CLOSED_VIEW_ROLE_IDS,
+    ...CONFIG.REOPEN_ROLE_IDS,
+    ...CONFIG.DELETE_ROLE_IDS,
+  ])) {
+    if (!roleId) continue;
+
+    await channel.permissionOverwrites.edit(roleId, {
+      ViewChannel: true,
+      SendMessages: true,
+      ReadMessageHistory: true,
+    }).catch(() => {});
+  }
+
+  // تأكيد خاص للشخص الذي أغلق التذكرة
+  await interaction.editReply({
+    content: "✅ تم إغلاق التذكرة وإظهار بانل **إعادة فتح / حذف** للإدارة.",
+  }).catch(() => {});
 }
 
 async function reopenTicket(interaction) {
