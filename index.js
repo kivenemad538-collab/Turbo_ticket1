@@ -66,34 +66,34 @@ const CONFIG = {
   // التذكرة نفسها لا تنتقل عند تغيير الأولوية.
   PRIORITY_NOTIFICATION_CHANNEL_IDS: {
     support: {
-      normal: "SUPPORT_NORMAL_CHANNEL_ID",
-      important: "SUPPORT_IMPORTANT_CHANNEL_ID",
-      urgent: "SUPPORT_URGENT_CHANNEL_ID",
+      normal: "1539725165439623229",
+      important: "1539725196792045668",
+      urgent: "1539725224541425714",
     },
     monitoring: {
-      normal: "MONITORING_NORMAL_CHANNEL_ID",
-      important: "MONITORING_IMPORTANT_CHANNEL_ID",
-      urgent: "MONITORING_URGENT_CHANNEL_ID",
+      normal: "1539979954299871272",
+      important: "1539979968295993394",
+      urgent: "1539979991180124160",
     },
     player_complaint: {
-      normal: "PLAYER_COMPLAINT_NORMAL_CHANNEL_ID",
-      important: "PLAYER_COMPLAINT_IMPORTANT_CHANNEL_ID",
-      urgent: "PLAYER_COMPLAINT_URGENT_CHANNEL_ID",
+      normal: "1539979489931563119",
+      important: "1539979569598173359",
+      urgent: "1539979595913240636",
     },
     staff_complaint: {
-      normal: "STAFF_COMPLAINT_NORMAL_CHANNEL_ID",
-      important: "STAFF_COMPLAINT_IMPORTANT_CHANNEL_ID",
-      urgent: "STAFF_COMPLAINT_URGENT_CHANNEL_ID",
+      normal: "1539979373984358461",
+      important: "1539979425771163689",
+      urgent: "1539979936708694017",
     },
     bug_report: {
-      normal: "BUG_REPORT_NORMAL_CHANNEL_ID",
-      important: "BUG_REPORT_IMPORTANT_CHANNEL_ID",
-      urgent: "BUG_REPORT_URGENT_CHANNEL_ID",
+      normal: "1539981071804801086",
+      important: "1539981114628640817",
+      urgent: "1539981097440645270",
     },
   },
 
   // اتشانل لوج الإغلاق - لو سبتها Placeholder مش هيبعت لوج
-  CLOSE_LOG_CHANNEL_ID: "CLOSE_LOG_CHANNEL_ID",
+  CLOSE_LOG_CHANNEL_ID: "1530404404115800124",
 
   // صورة بانل التذاكر
   PANEL_IMAGE_URL:
