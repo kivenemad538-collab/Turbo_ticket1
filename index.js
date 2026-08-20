@@ -56,9 +56,9 @@ const CONFIG = {
   // كل نوع تذكرة له Category مستقلة
   TICKET_CATEGORY_IDS: {
     support: "1522093063369920700",
-    monitoring: "1522093063588020290",
+    monitoring: "1539979835227512873",
     player_complaint: "1522093064108249159",
-    staff_complaint: "STAFF_COMPLAINT_CATEGORY_ID",
+    staff_complaint: "1539979309559717948",
     bug_report: "1522093064942915656",
   },
 
