@@ -56,6 +56,7 @@ const CONFIG = {
   // كل نوع تذكرة له Category مستقلة
   TICKET_CATEGORY_IDS: {
     support: "1522093063369920700",
+    store: "1522093063369920700",
     monitoring: "1539979835227512873",
     player_complaint: "1522093064108249159",
     staff_complaint: "1539979309559717948",
@@ -66,6 +67,11 @@ const CONFIG = {
   // التذكرة نفسها لا تنتقل عند تغيير الأولوية.
   PRIORITY_NOTIFICATION_CHANNEL_IDS: {
     support: {
+      normal: "1539725165439623229",
+      important: "1539725196792045668",
+      urgent: "1539725224541425714",
+    },
+    store: {
       normal: "1539725165439623229",
       important: "1539725196792045668",
       urgent: "1539725224541425714",
@@ -112,6 +118,11 @@ const TICKET_TYPES = {
     label: "الدعم الفني",
     emoji: "🛠️",
     description: "للمشاكل الفنية والبوتات والديسكورد أو مشاكل السيرفر.",
+  },
+  store: {
+    label: "المتجر",
+    emoji: "🛒",
+    description: "للتواصل بخصوص المشتريات والطلبات وخدمات المتجر.",
   },
   monitoring: {
     label: "الرقابة",
