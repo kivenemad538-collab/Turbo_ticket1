@@ -57,6 +57,8 @@ const CONFIG = {
   TICKET_CATEGORY_IDS: {
     support: "1522093063369920700",
     store: "1523665597676785704",
+    compensation: "1543316503976345600",
+    appeal: "1543317277724639292",
     monitoring: "1539979835227512873",
     player_complaint: "1522093064108249159",
     staff_complaint: "1539979309559717948",
@@ -75,6 +77,16 @@ const CONFIG = {
       normal: "1543311680266829864",
       important: "1543311696964091964",
       urgent: "1543311724667736104",
+    },
+    compensation: {
+      normal: "1543316542664745130",
+      important: "1543316583332716574",
+      urgent: "1543316604748828682",
+    },
+    appeal: {
+      normal: "1543317306820534443",
+      important: "1543317338189729893",
+      urgent: "1543317371702345818",
     },
     monitoring: {
       normal: "1539979954299871272",
@@ -123,6 +135,16 @@ const TICKET_TYPES = {
     label: "المتجر",
     emoji: "🛒",
     description: "للتواصل بخصوص المشتريات والطلبات وخدمات المتجر.",
+  },
+  compensation: {
+    label: "التعويضات",
+    emoji: "🎁",
+    description: "لطلب التعويض مع توضيح السبب وإرفاق الأدلة المطلوبة.",
+  },
+  appeal: {
+    label: "الاستئناف",
+    emoji: "📨",
+    description: "لتقديم استئناف على العقوبة مع توضيح التفاصيل.",
   },
   monitoring: {
     label: "الرقابة",
