@@ -115,7 +115,7 @@ const CONFIG = {
 
   // صورة بانل التذاكر
   PANEL_IMAGE_URL:
-    "https://cdn.discordapp.com/attachments/1523767129629917315/1539717509199040523/IMG_0188.png?ex=6a87552c&is=6a8603ac&hm=01e6d5cdce37020fad09a0221ac9f8f8ba853da353b96277882b105b3b750e0e&",
+    "https://cdn.discordapp.com/attachments/1522093056495718481/1548715281868656680/w5wmthh.png?ex=6aad5700&is=6aac0580&hm=3d057b85165b52931a4c0f437d02aee7ba82591627296632a19e5ced94d0d05e&",
 
   BLUE_COLOR: 0x1e90ff,
   TICKET_PREFIX: "ticket",
